@@ -1,29 +1,34 @@
 ﻿module GameFunctions
 
-let rec shiftLeft values = 
-    match values with
-    | 0 :: rest -> shiftLeft rest
-    | x :: y :: rest -> 
-        if x = y then (x + y) :: (shiftLeft rest)
-        else x :: (shiftLeft (y :: rest))
-    | _ -> values
+let rec zeros = Seq.initInfinite (fun i -> 0)
+
+let smush acc value = 
+    match value, acc with
+    |0, _ -> acc
+    |_, [] -> [value]
+    |n, x::xs -> if n = x then (n+x) :: xs else n::acc
+
+let collapse values = 
+    values 
+    |> List.fold smush [] 
+    |> List.rev  
 
 let padRightZeros targetLength list = 
-    let rec zeros = 
-        seq { 
-            yield 0
-            yield! zeros
-        }
     Seq.concat [ list; zeros ]
     |> Seq.take targetLength
     |> List.ofSeq
 
 let swipeLeft values = 
     values
-    |> shiftLeft
+    |> collapse
     |> padRightZeros 4
 
 let swipeRight = 
     List.rev
     >> swipeLeft
     >> List.rev
+
+
+let column n (array:'a[,]) = array.[*, n]
+
+let row n (array:'a[,]) = array.[n,*]
